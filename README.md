@@ -25,7 +25,7 @@ An iOS app demonstrating selected APIs from Apple’s Foundation Models framewor
 
 ### Clone and Build
 ```bash
-git clone <repository-url>
+git clone https://github.com/juanjocorbalan/OnDeviceAIExamples
 cd OnDeviceAIExamples
 open OnDeviceAIExamples.xcodeproj
 ```
