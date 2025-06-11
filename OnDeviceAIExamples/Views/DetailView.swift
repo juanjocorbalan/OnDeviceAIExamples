@@ -3,7 +3,7 @@ import SwiftUI
 struct DetailView: View {
     let exampleType: ExampleType
     @State private var viewModel = DetailViewModel()
-    @State private var availabilityService = AvailabilityService()
+    @State private var availabilityService = AvailabilityService.shared
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {

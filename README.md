@@ -6,6 +6,7 @@ An iOS app demonstrating selected APIs from Apple’s Foundation Models framewor
 
 ### 🤖 AI Examples
 - **Basic Response**: Simple conversational AI interactions
+- **Interactive Chat**: Full conversation interface with message history
 - **Streaming Response**: Real-time AI response streaming
 - **Structured Generation**: Type-safe object generation using `@Generable`
 - **Custom Tools**: AI model integration with custom tools

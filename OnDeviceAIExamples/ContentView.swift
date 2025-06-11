@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var selectedExample: ExampleType?
-    @State private var availabilityService = AvailabilityService()
+    @State private var availabilityService = AvailabilityService.shared
     
     var body: some View {
         NavigationStack {
@@ -24,7 +24,11 @@ struct ContentView: View {
             .navigationTitle("AI Examples")
         }
         .sheet(item: $selectedExample) { exampleType in
-            DetailView(exampleType: exampleType)
+            if exampleType == .interactiveChat {
+                ChatView()
+            } else {
+                DetailView(exampleType: exampleType)
+            }
         }
         .task {
             availabilityService.checkAvailability()

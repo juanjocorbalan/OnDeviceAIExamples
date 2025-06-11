@@ -3,14 +3,23 @@ import Observation
 import UIKit
 
 /// Service for checking Foundation Models availability
+@MainActor
 @Observable
 final class AvailabilityService {
+    
+    // MARK: - Singleton
+    
+    static let shared = AvailabilityService()
     
     // MARK: - Properties
     
     var isAvailable: Bool = false
     var unavailabilityReason: UnavailabilityReason?
     var isChecking: Bool = false
+    
+    // MARK: - Initialization
+    
+    private init() {}
     
     // MARK: - Types
     
@@ -106,7 +115,6 @@ final class AvailabilityService {
         isChecking = false
     }
     
-    @MainActor
     func performAction() {
         guard let reason = unavailabilityReason else { return }
         

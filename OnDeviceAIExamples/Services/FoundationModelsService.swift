@@ -9,10 +9,11 @@ final class FoundationModelsService {
     // MARK: - Properties
 
     private let paintingTool = PaintingDatabaseTool()
+    private var chatSession: LanguageModelSession?
 
     // MARK: - Session Management
 
-    func createBasicSession(instructions: String? = nil) -> LanguageModelSession {
+    private func createBasicSession(instructions: String? = nil) -> LanguageModelSession {
         let session: LanguageModelSession
         if let instructions {
             session = LanguageModelSession(instructions: Instructions(instructions))
@@ -22,7 +23,7 @@ final class FoundationModelsService {
         return session
     }
 
-    func createSessionWithTools(instructions: String? = nil) -> LanguageModelSession {
+    private func createSessionWithTools(instructions: String? = nil) -> LanguageModelSession {
         let defaultInstructions = "You are a helpful assistant with access to art and painting databases."
         let finalInstructions = instructions ?? defaultInstructions
 
@@ -50,16 +51,22 @@ final class FoundationModelsService {
     }
 
     @MainActor
-    func streamResponse(prompt: String, instructions: String? = nil, onPartialUpdate: @escaping (String) -> Void) async throws -> String {
+    func streamResponse(prompt: String, instructions: String? = nil) -> AsyncThrowingStream<String, Error> {
         let session = createBasicSession(instructions: instructions)
         let stream = session.streamResponse(to: Prompt(prompt))
 
-        for try await partialResponse in stream {
-            onPartialUpdate(partialResponse)
+        return AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    for try await partialResponse in stream {
+                        continuation.yield(partialResponse)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
         }
-
-        let finalResponse = try await stream.collect()
-        return finalResponse.content
     }
 
     @MainActor
@@ -67,6 +74,38 @@ final class FoundationModelsService {
         let session = createSessionWithTools()
         let response = try await session.respond(to: Prompt(prompt))
         return response.content
+    }
+
+    // MARK: - Chat Session Management
+
+    private func initializeChatSessionIfNeeded(instructions: String? = nil) -> LanguageModelSession {
+        guard chatSession == nil else { return chatSession! }
+        return createBasicSession(instructions: instructions ?? "Be concise and engaging in your responses.")
+    }
+
+    @MainActor
+    func streamChatResponse(prompt: String, options: GenerationOptions? = nil) -> AsyncThrowingStream<String, Error> {
+        let session = initializeChatSessionIfNeeded()
+        let generationOptions = options ?? GenerationOptions(temperature: 0.8)
+        let stream = session.streamResponse(to: Prompt(prompt), options: generationOptions)
+
+        return AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    for try await partialResponse in stream {
+                        continuation.yield(partialResponse)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
+    }
+
+    @MainActor
+    func invalidateChatSession() {
+        chatSession = nil
     }
 
     // MARK: - Error Handling

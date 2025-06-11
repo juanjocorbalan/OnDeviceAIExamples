@@ -3,17 +3,11 @@ import FoundationModels
 import Observation
 
 @Observable
-final class DetailViewModel {
+final class DetailViewModel: BaseViewModel {
 
-    // MARK: - Dependencies
-
-    private let foundationModelsService = FoundationModelsService()
-
-    // MARK: - Published Properties
+    // MARK: - Properties
 
     var response: String = ""
-    var isLoading: Bool = false
-    var errorMessage: String = ""
 
     // MARK: - Computed Properties
 
@@ -42,17 +36,17 @@ final class DetailViewModel {
             await executeStructuredGeneration(example: example)
         case .customTool:
             await executeCustomTool(example: example)
+        default:
+            return // Interactive chat is handled by ChatViewModel
         }
     }
 
-    @MainActor
     private func executeBasicResponse(example: ExampleType) async {
         await executeExample {
             try await self.foundationModelsService.generateResponse(prompt: example.prompt)
         }
     }
 
-    @MainActor
     private func executeStructuredGeneration(example: ExampleType) async {
         await executeExample {
             let workout = try await self.foundationModelsService.generateStructuredData(
@@ -64,32 +58,25 @@ final class DetailViewModel {
         }
     }
 
-    @MainActor
     private func executeStreamingResponse(example: ExampleType) async {
         isLoading = true
         response = ""
-        errorMessage = ""
+        resetError()
 
         do {
-            let finalResponse = try await foundationModelsService.streamResponse(
-                prompt: example.prompt,
-                onPartialUpdate: { [weak self] partialText in
-                    Task {
-                        self?.response = partialText
-                    }
-                }
-            )
-
-            response = finalResponse
+            let stream = foundationModelsService.streamResponse(prompt: example.prompt)
+            
+            for try await partialResponse in stream {
+                response = partialResponse
+            }
+            
             isLoading = false
         } catch {
-            errorMessage = foundationModelsService.handleError(error)
-            isLoading = false
+            handleError(error)
         }
     }
 
 
-    @MainActor
     private func executeCustomTool(example: ExampleType) async {
         await executeExample {
             let paintingResult = try await self.foundationModelsService.executeWithTools(prompt: example.prompt)
@@ -114,17 +101,16 @@ final class DetailViewModel {
         """
     }
 
-    @MainActor
     private func executeExample(_ operation: @escaping () async throws -> String) async {
         isLoading = true
         response = ""
-        errorMessage = ""
+        resetError()
 
         do {
             let result = try await operation()
             response = result
         } catch {
-            errorMessage = foundationModelsService.handleError(error)
+            handleError(error)
         }
 
         isLoading = false
