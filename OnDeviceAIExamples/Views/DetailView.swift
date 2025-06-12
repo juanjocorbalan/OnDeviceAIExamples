@@ -9,37 +9,34 @@ struct DetailView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                GlassEffectContainer(spacing: 20) {
-                    VStack(spacing: 20) {
-                        headerView
+                VStack(spacing: 20) {
+                    headerView
 
-                        if availabilityService.isAvailable {
-                            if viewModel.isLoading && !viewModel.hasContent {
-                                loadingView
-                            } else if viewModel.hasContent {
-                                VStack(spacing: 20) {
-                                    requestView
-                                    responseView
-                                }
-                                .padding(.vertical, 16)
-                                .padding(.horizontal, 20)
-                                .frame(maxWidth: .infinity)
-                                .glassEffect(in: .rect(cornerRadius: 20))
-                            } else {
-                                emptyStateView
+                    if availabilityService.isAvailable {
+                        if viewModel.isLoading && !viewModel.hasContent {
+                            loadingView
+                        } else if viewModel.hasContent {
+                            VStack(spacing: 20) {
+                                requestView
+                                responseView
                             }
-                        } else if let reason = availabilityService.unavailabilityReason {
-                            UnavailableView(
-                                reason: reason,
-                                onAction: reason.actionTitle != nil ? {
-                                    availabilityService.performAction()
-                                } : nil
-                            )
+                            .padding(.vertical, 16)
+                            .padding(.horizontal, 20)
+                            .frame(maxWidth: .infinity)
+                        } else {
+                            emptyStateView
                         }
+                    } else if let reason = availabilityService.unavailabilityReason {
+                        UnavailableView(
+                            reason: reason,
+                            onAction: reason.actionTitle != nil ? {
+                                availabilityService.performAction()
+                            } : nil
+                        )
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
             }
             .background(Color(.systemGroupedBackground))
             .navigationBarTitleDisplayMode(.inline)
@@ -49,9 +46,8 @@ struct DetailView: View {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
-                            .foregroundStyle(.secondary)
-                            .glassEffect()
                     }
+                    .buttonStyle(.glass)
                 }
             }
             .task {
@@ -70,7 +66,6 @@ struct DetailView: View {
                 .font(.system(size: 32, weight: .medium))
                 .foregroundStyle(exampleType.tintColor ?? .blue)
                 .frame(width: 80, height: 80)
-                .glassEffect(in: .circle)
 
             VStack(spacing: 8) {
                 Text(exampleType.rawValue)
@@ -85,10 +80,10 @@ struct DetailView: View {
                     .lineLimit(3)
             }
         }
+        .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
         .padding(.horizontal, 24)
-        .frame(maxWidth: .infinity)
-        .glassEffect(in: .rect(cornerRadius: 20))
+        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 28))
     }
 
     private var requestView: some View {
@@ -98,18 +93,11 @@ struct DetailView: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(.blue)
                     .frame(width: 32, height: 32)
-                    .glassEffect(in: .circle)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Request")
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.primary)
-
-                    Text("Prompt sent to the model")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                Text("Request")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
 
                 Spacer()
             }
@@ -119,8 +107,10 @@ struct DetailView: View {
                 .foregroundStyle(.primary)
                 .textSelection(.enabled)
                 .padding(20)
-                .glassEffect(in: .rect(cornerRadius: 16))
         }
+        .padding(.vertical, 20)
+        .padding(.horizontal, 20)
+        .glassEffect(.regular, in: .rect(cornerRadius: 24))
     }
 
     private var loadingView: some View {
@@ -135,21 +125,14 @@ struct DetailView: View {
                     .tint(.blue)
             }
 
-            VStack(spacing: 8) {
-                Text("Generating response...")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
-
-                Text("AI is processing your request")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
+            Text("Generating response...")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
         }
         .padding(.vertical, 40)
         .padding(.horizontal, 24)
-        .frame(maxWidth: .infinity)
-        .glassEffect(in: .rect(cornerRadius: 16))
+        .glassEffect(.regular, in: .rect(cornerRadius: 24))
     }
 
     private var responseView: some View {
@@ -159,18 +142,11 @@ struct DetailView: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(viewModel.isError ? .red : .green)
                     .frame(width: 32, height: 32)
-                    .glassEffect(in: .circle)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(viewModel.isError ? "Error" : "Response")
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.primary)
-
-                    Text(viewModel.isError ? "Something went wrong" : "AI generated successfully")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                Text(viewModel.isError ? "Error" : "Response")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
 
                 Spacer()
             }
@@ -180,8 +156,10 @@ struct DetailView: View {
                 .foregroundStyle(viewModel.isError ? .red : .primary)
                 .textSelection(.enabled)
                 .padding(20)
-                .glassEffect(in: .rect(cornerRadius: 16))
         }
+        .padding(.vertical, 20)
+        .padding(.horizontal, 20)
+        .glassEffect(.regular, in: .rect(cornerRadius: 24))
     }
 
     private var emptyStateView: some View {
@@ -190,7 +168,6 @@ struct DetailView: View {
                 .font(.system(size: 40, weight: .medium))
                 .foregroundStyle(exampleType.tintColor ?? .blue)
                 .frame(width: 100, height: 100)
-                .glassEffect(in: .circle)
 
             VStack(spacing: 8) {
                 Text("Ready to generate")
@@ -209,23 +186,17 @@ struct DetailView: View {
                     await executeExample()
                 }
             } label: {
-                HStack(spacing: 12) {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 18, weight: .medium))
-                    Text("Generate")
-                        .font(.system(size: 18, weight: .semibold))
-                }
-                .foregroundStyle(.white)
-                .padding(.horizontal, 32)
-                .padding(.vertical, 16)
-                .background(.blue.gradient)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                Label("Generate", systemImage: "sparkles")
+                    .labelStyle(.titleAndIcon)
             }
+            .buttonStyle(.glass)
+            .controlSize(.large)
+            .tint(.blue)
         }
         .padding(.vertical, 40)
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity)
-        .glassEffect(in: .rect(cornerRadius: 20))
+        .glassEffect(.regular, in: .rect(cornerRadius: 24))
     }
 
     // MARK: - Actions

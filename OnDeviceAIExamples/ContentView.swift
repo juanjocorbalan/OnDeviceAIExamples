@@ -7,24 +7,22 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                GlassEffectContainer(spacing: 20) {
-                    VStack(spacing: 20) {
-                        headerSection
+                VStack(spacing: 20) {
+                    headerSection
 
-                        if availabilityService.isAvailable {
-                            exampleButtonsView
-                        } else if let reason = availabilityService.unavailabilityReason {
-                            UnavailableView(
-                                reason: reason,
-                                onAction: reason.actionTitle != nil ? {
-                                    availabilityService.performAction()
-                                } : nil
-                            )
-                        }
+                    if availabilityService.isAvailable {
+                        exampleButtonsView
+                    } else if let reason = availabilityService.unavailabilityReason {
+                        UnavailableView(
+                            reason: reason,
+                            onAction: reason.actionTitle != nil ? {
+                                availabilityService.performAction()
+                            } : nil
+                        )
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("AI Examples")
@@ -48,7 +46,7 @@ struct ContentView: View {
             .multilineTextAlignment(.leading)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(24)
-            .glassEffect(in: .rect(cornerRadius: 16))
+            .glassEffect(in: .rect(cornerRadius: 28))
     }
 
     private var exampleButtonsView: some View {
@@ -60,32 +58,32 @@ struct ContentView: View {
                 Button {
                     selectedExample = exampleType
                 } label: {
-                    VStack(spacing: 16) {
-                        Image(systemName: exampleType.icon)
-                            .font(.system(size: 24, weight: .medium))
-                            .foregroundStyle(exampleType.tintColor ?? .blue)
+                    GlassEffectContainer(spacing: 0) {
+                        VStack(spacing: 16) {
+                            Image(systemName: exampleType.icon)
+                                .font(.system(size: 24, weight: .medium))
+                                .foregroundStyle(exampleType.tintColor ?? .blue)
 
-                        VStack(spacing: 4) {
-                            Text(exampleType.rawValue)
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(.primary)
-                                .multilineTextAlignment(.center)
-                                .lineLimit(2)
+                            VStack(spacing: 4) {
+                                Text(exampleType.rawValue)
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .multilineTextAlignment(.center)
+                                    .lineLimit(2)
 
-                            Text(exampleType.subtitle)
-                                .font(.system(size: 11, weight: .regular))
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center)
-                                .lineLimit(3)
+                                Text(exampleType.subtitle)
+                                    .font(.system(size: 11, weight: .regular))
+                                    .multilineTextAlignment(.center)
+                                    .lineLimit(3)
+                            }
                         }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 140)
+                        .padding(20)
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 140)
-                    .padding(20)
                 }
-                .glassEffect(in: .rect(cornerRadius: 16))
-                .foregroundStyle(.secondary)
             }
+            .buttonStyle(.plain)
+            .glassEffect(.regular, in: .rect(cornerRadius: 28))
         }
     }
 }

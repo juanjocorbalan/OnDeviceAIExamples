@@ -9,19 +9,17 @@ struct ChatView: View {
             ZStack {
                 ScrollViewReader { proxy in
                     ScrollView {
-                        GlassEffectContainer(spacing: 16) {
-                            VStack(spacing: 16) {
-                                if viewModel.messages.isEmpty {
-                                    emptyStateView
-                                } else {
-                                    ForEach(viewModel.messages) { message in
-                                        BubbleView(message: message, isTyping: viewModel.isGenerating)
-                                            .id(message.id)
-                                    }
+                        VStack(spacing: 16) {
+                            if viewModel.messages.isEmpty {
+                                emptyStateView
+                            } else {
+                                ForEach(viewModel.messages) { message in
+                                    BubbleView(message: message, isTyping: viewModel.isGenerating)
+                                        .id(message.id)
                                 }
                             }
-                            .padding(20)
                         }
+                        .padding(20)
                     }
                     .safeAreaInset(edge: .bottom) {
                         Color.clear.frame(height: 110)
@@ -50,20 +48,18 @@ struct ChatView: View {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
-                            .foregroundStyle(.secondary)
-                            .glassEffect()
                     }
+                    .buttonStyle(.glass)
                 }
-                
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         viewModel.clearConversation()
                     } label: {
                         Image(systemName: "trash")
-                            .foregroundStyle(.secondary)
-                            .glassEffect()
                     }
                     .disabled(viewModel.messages.isEmpty)
+                    .buttonStyle(.glass)
                 }
             }
             .alert("Error", isPresented: $viewModel.showErrorAlert) {
@@ -80,7 +76,6 @@ struct ChatView: View {
                 .font(.system(size: 40, weight: .medium))
                 .foregroundStyle(.blue)
                 .frame(width: 80, height: 80)
-                .glassEffect(in: .circle)
 
             Text("Start a Conversation")
                 .font(.title2)
@@ -93,9 +88,8 @@ struct ChatView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(24)
-        .glassEffect(in: .rect(cornerRadius: 20))
     }
-
+    
     private var inputField: some View {
         HStack(spacing: 12) {
             TextField("Type a message...", text: $viewModel.inputText, axis: .vertical)
@@ -115,14 +109,14 @@ struct ChatView: View {
                     .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(
                         viewModel.canSendMessage ?
-                        .blue :
-                        Color.gray.opacity(0.6)
+                            .blue :
+                            Color.gray.opacity(0.6)
                     )
             }
             .disabled(!viewModel.canSendMessage && !viewModel.isGenerating)
         }
         .padding(24)
-        .glassEffect(in: .rect(cornerRadius: 16))
+        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 32))
     }
 }
 

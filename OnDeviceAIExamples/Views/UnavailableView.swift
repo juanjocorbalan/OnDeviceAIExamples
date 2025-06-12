@@ -5,14 +5,17 @@ struct UnavailableView: View {
     let onAction: (() -> Void)?
 
     var body: some View {
-        VStack(spacing: 32) {
-            iconSection
-            textSection
-            buttonSection
+        GlassEffectContainer(spacing: 0) {
+            VStack(spacing: 32) {
+                iconSection
+                textSection
+                buttonSection
+            }
+            .frame(maxWidth: .infinity)
+            .padding(40)
+            .background(.orange.opacity(0.6).gradient)
+            .clipShape(.rect(cornerRadius: 20))
         }
-        .frame(maxWidth: .infinity)
-        .padding(40)
-        .glassEffect(in: .rect(cornerRadius: 24))
     }
 
     private var iconSection: some View {
@@ -21,6 +24,7 @@ struct UnavailableView: View {
             .foregroundStyle(.orange)
             .frame(width: 100, height: 100)
             .glassEffect(in: .circle)
+
     }
 
     private var textSection: some View {
@@ -28,12 +32,10 @@ struct UnavailableView: View {
             Text(reason.title)
                 .font(.title2)
                 .fontWeight(.bold)
-                .foregroundStyle(.primary)
                 .multilineTextAlignment(.center)
 
             Text(reason.description)
                 .font(.body)
-                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .lineLimit(nil)
         }
@@ -53,17 +55,17 @@ struct UnavailableView: View {
 }
 
 #Preview {
-    VStack(spacing: 20) {
-        UnavailableView(
-            reason: .appleIntelligenceNotEnabled,
-            onAction: {}
-        )
+    UnavailableView(
+        reason: .appleIntelligenceNotEnabled,
+        onAction: {}
+    )
+    .padding(.horizontal)
+}
 
-        UnavailableView(
-            reason: .deviceNotEligible,
-            onAction: nil
-        )
-    }
-    .padding()
-    .background(Color(.systemGroupedBackground))
+#Preview {
+    UnavailableView(
+        reason: .deviceNotEligible,
+        onAction: nil
+    )
+    .padding(.horizontal)
 }
