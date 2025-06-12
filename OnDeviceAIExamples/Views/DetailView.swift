@@ -83,7 +83,7 @@ struct DetailView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
         .padding(.horizontal, 24)
-        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 28))
+        .glassEffect(.regular, in: .rect(cornerRadius: 24))
     }
 
     private var requestView: some View {

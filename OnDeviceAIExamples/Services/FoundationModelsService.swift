@@ -103,7 +103,9 @@ final class FoundationModelsService {
 
     private func initializeChatSessionIfNeeded(instructions: String? = nil) throws -> LanguageModelSession {
         guard chatSession == nil else { return chatSession! }
-        return try createBasicSession(instructions: instructions ?? "Be concise and engaging in your responses.")
+        let session = try createBasicSession(instructions: instructions ?? "Be concise and engaging in your responses.")
+        chatSession = session
+        return session
     }
 
     func streamChatResponse(prompt: String, options: GenerationOptions? = nil) -> AsyncThrowingStream<String, Error> {

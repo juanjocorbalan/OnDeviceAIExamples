@@ -65,7 +65,7 @@ struct BubbleView: View {
         HStack(spacing: 8) {
             ForEach(0..<3) { index in
                 Circle()
-                    .fill(.black)
+                    .fill(.secondary)
                     .frame(width: 8, height: 8)
                     .scaleEffect(isAnimating ? 1.0 : 0.5)
                     .animation(

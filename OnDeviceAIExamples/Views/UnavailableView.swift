@@ -13,7 +13,7 @@ struct UnavailableView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(40)
-            .background(.orange.opacity(0.6).gradient)
+            .background(.orange.gradient.opacity(0.3))
             .clipShape(.rect(cornerRadius: 20))
         }
     }
