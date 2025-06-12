@@ -6,30 +6,53 @@ import UIKit
 @MainActor
 @Observable
 final class AvailabilityService {
-    
-    // MARK: - Singleton
-    
-    static let shared = AvailabilityService()
-    
+
     // MARK: - Properties
-    
-    var isAvailable: Bool = false
-    var unavailabilityReason: UnavailabilityReason?
-    var isChecking: Bool = false
-    
-    // MARK: - Initialization
-    
-    private init() {}
-    
-    // MARK: - Types
-    
+
+    private let model = SystemLanguageModel.default
+
+    var isAvailable: Bool {
+        model.isAvailable
+    }
+
+    var unavailabilityReason: UnavailabilityReason? {
+        switch model.availability {
+        case .available:
+            return nil
+        case .unavailable(.deviceNotEligible):
+            return .deviceNotEligible
+        case .unavailable(.appleIntelligenceNotEnabled):
+            return .appleIntelligenceNotEnabled
+        case .unavailable(.modelNotReady):
+            return .modelNotReady
+        case .unavailable:
+            return .unknown
+        }
+    }
+
+    // MARK: - Actions
+
+    func performAction() {
+        switch unavailabilityReason {
+        case .appleIntelligenceNotEnabled:
+            let settingsURL = URL(string: "App-prefs:APPLE_INTELLIGENCE_AND_SIRI") ??
+                             URL(string: UIApplication.openSettingsURLString)
+
+            guard let url = settingsURL, UIApplication.shared.canOpenURL(url) else { return }
+            UIApplication.shared.open(url)
+        default:
+            break
+        }
+    }
+}
+
+extension AvailabilityService {
     enum UnavailabilityReason {
         case deviceNotEligible
         case appleIntelligenceNotEnabled
         case modelNotReady
-        case systemVersionTooOld
         case unknown
-        
+
         var title: String {
             switch self {
             case .deviceNotEligible:
@@ -38,13 +61,11 @@ final class AvailabilityService {
                 return "Apple Intelligence Disabled"
             case .modelNotReady:
                 return "Model Not Ready"
-            case .systemVersionTooOld:
-                return "iOS Version Too Old"
             case .unknown:
                 return "Foundation Models Unavailable"
             }
         }
-        
+
         var description: String {
             switch self {
             case .deviceNotEligible:
@@ -53,108 +74,31 @@ final class AvailabilityService {
                 return "Apple Intelligence is not enabled on this device. Please enable it in Settings > Apple Intelligence & Siri."
             case .modelNotReady:
                 return "Foundation Models are downloading or not ready. This may take some time depending on your network connection."
-            case .systemVersionTooOld:
-                return "Foundation Models require iOS 26 or later with Apple Intelligence support. Please update your device."
             case .unknown:
-                return "Foundation Models are not available on this device. Please check your device compatibility and Apple Intelligence settings."
+                return "Foundation Models are not available on your device"
             }
         }
-        
+
         var actionTitle: String? {
             switch self {
             case .appleIntelligenceNotEnabled:
                 return "Open Settings"
-            case .systemVersionTooOld:
-                return "Check for Update"
             default:
                 return nil
             }
         }
-    }
-    
-    // MARK: - Methods
-    
-    func checkAvailability() {
-        isChecking = true
-        
-        // Check iOS version first
-        if #available(iOS 26, *) {
-            // iOS 26+ is available, now check Foundation Models
-            checkFoundationModelsAvailability()
-        } else {
-            // iOS version is too old
-            isAvailable = false
-            unavailabilityReason = .systemVersionTooOld
-            isChecking = false
-        }
-    }
-    
-    private func checkFoundationModelsAvailability() {
-        let model = SystemLanguageModel.default
-        
-        switch model.availability {
-        case .available:
-            isAvailable = true
-            unavailabilityReason = nil
-            
-        case .unavailable(let reason):
-            isAvailable = false
-            
-            switch reason {
+
+        var icon: String {
+            switch self {
             case .deviceNotEligible:
-                unavailabilityReason = .deviceNotEligible
+                return "iphone.slash"
             case .appleIntelligenceNotEnabled:
-                unavailabilityReason = .appleIntelligenceNotEnabled
+                return "brain"
             case .modelNotReady:
-                unavailabilityReason = .modelNotReady
-            @unknown default:
-                unavailabilityReason = .unknown
+                return "icloud.and.arrow.down"
+            case .unknown:
+                return "exclamationmark.triangle.fill"
             }
-        }
-        
-        isChecking = false
-    }
-    
-    func performAction() {
-        guard let reason = unavailabilityReason else { return }
-        
-        switch reason {
-        case .appleIntelligenceNotEnabled:
-            openAppleIntelligenceSettings()
-        case .systemVersionTooOld:
-            openSoftwareUpdateSettings()
-        default:
-            break
-        }
-    }
-    
-    @MainActor
-    private func openAppleIntelligenceSettings() {
-        if let url = URL(string: "App-prefs:APPLE_INTELLIGENCE") {
-            if UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url)
-            } else {
-                // Fallback to general settings
-                openGeneralSettings()
-            }
-        }
-    }
-    
-    @MainActor
-    private func openSoftwareUpdateSettings() {
-        if let url = URL(string: "App-prefs:General&path=SOFTWARE_UPDATE_LINK") {
-            if UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url)
-            } else {
-                openGeneralSettings()
-            }
-        }
-    }
-    
-    @MainActor
-    private func openGeneralSettings() {
-        if let url = URL(string: UIApplication.openSettingsURLString) {
-            UIApplication.shared.open(url)
         }
     }
 }

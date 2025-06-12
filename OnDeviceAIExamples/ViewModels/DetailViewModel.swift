@@ -25,7 +25,6 @@ final class DetailViewModel: BaseViewModel {
 
     // MARK: - Operations
 
-    @MainActor
     func execute(example: ExampleType) async {
         switch example {
         case .basicResponse:
@@ -36,24 +35,23 @@ final class DetailViewModel: BaseViewModel {
             await executeStructuredGeneration(example: example)
         case .customTool:
             await executeCustomTool(example: example)
-        default:
+        case .interactiveChat:
             return // Interactive chat is handled by ChatViewModel
         }
     }
 
     private func executeBasicResponse(example: ExampleType) async {
-        await executeExample {
+        await executeStandardOperation {
             try await self.foundationModelsService.generateResponse(prompt: example.prompt)
         }
     }
 
     private func executeStructuredGeneration(example: ExampleType) async {
-        await executeExample {
+        await executeStandardOperation {
             let workout = try await self.foundationModelsService.generateStructuredData(
                 prompt: example.prompt,
                 type: FitnessWorkout.self
             )
-
             return self.formatWorkout(workout)
         }
     }
@@ -65,22 +63,20 @@ final class DetailViewModel: BaseViewModel {
 
         do {
             let stream = foundationModelsService.streamResponse(prompt: example.prompt)
-            
+
             for try await partialResponse in stream {
                 response = partialResponse
             }
-            
+
             isLoading = false
         } catch {
             handleError(error)
         }
     }
 
-
     private func executeCustomTool(example: ExampleType) async {
-        await executeExample {
-            let paintingResult = try await self.foundationModelsService.executeWithTools(prompt: example.prompt)
-            return paintingResult
+        await executeStandardOperation {
+            try await self.foundationModelsService.executeWithTools(prompt: example.prompt)
         }
     }
 
@@ -101,14 +97,13 @@ final class DetailViewModel: BaseViewModel {
         """
     }
 
-    private func executeExample(_ operation: @escaping () async throws -> String) async {
+    private func executeStandardOperation(_ operation: @escaping () async throws -> String) async {
         isLoading = true
         response = ""
         resetError()
 
         do {
-            let result = try await operation()
-            response = result
+            response = try await operation()
         } catch {
             handleError(error)
         }
@@ -116,4 +111,3 @@ final class DetailViewModel: BaseViewModel {
         isLoading = false
     }
 }
-

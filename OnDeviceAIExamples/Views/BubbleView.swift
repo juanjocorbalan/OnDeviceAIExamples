@@ -2,39 +2,114 @@ import SwiftUI
 
 struct BubbleView: View {
     let message: ChatMessage
-    let isResponding: Bool
-    
+    let isTyping: Bool
+
+    @State private var isAnimating = false
+
     var body: some View {
         HStack {
             if message.isUser {
                 Spacer()
-                Text(message.text)
-                    .padding(12)
-                    .foregroundColor(.white)
-                    .background(DesignSystem.primaryGradient)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .applyShadow(DesignSystem.cardShadow)
-                
+                userBubble
             } else {
-                VStack(alignment: .leading, spacing: 4) {
-                    if message.text.isEmpty && isResponding {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle())
-                            .frame(width: 30, height: 30)
-                    } else {
-                        Text(message.text)
-                            .padding(12)
-                            .foregroundColor(.white)
-                            .background(DesignSystem.primaryGradient)
-                            .clipShape(RoundedRectangle(cornerRadius: 18))
-                            .applyShadow(DesignSystem.cardShadow)
-                            .textSelection(.enabled)
-                    }
-                }
-                .padding(.vertical, 8)
+                assistantBubble
                 Spacer()
             }
         }
         .padding(.vertical, 6)
     }
+
+    private var userBubble: some View {
+        Text(message.text)
+            .font(.body)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(.blue.gradient)
+            .clipShape(
+                .rect(
+                    topLeadingRadius: 16,
+                    bottomLeadingRadius: 16,
+                    bottomTrailingRadius: 6,
+                    topTrailingRadius: 16
+                )
+            )
+    }
+
+    private var assistantBubble: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            if message.text.isEmpty && isTyping {
+                typingIndicator
+            } else {
+                Text(message.text)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .glassEffect(
+                        .regular.tint(.blue.opacity(0.05)),
+                        in: .rect(
+                            topLeadingRadius: 6,
+                            bottomLeadingRadius: 16,
+                            bottomTrailingRadius: 16,
+                            topTrailingRadius: 16
+                        )
+                    )
+                    .textSelection(.enabled)
+            }
+        }
+    }
+
+    private var typingIndicator: some View {
+        HStack(spacing: 8) {
+            ForEach(0..<3) { index in
+                Circle()
+                    .fill(.secondary)
+                    .frame(width: 8, height: 8)
+                    .scaleEffect(isAnimating ? 1.0 : 0.5)
+                    .animation(
+                        .easeInOut(duration: 0.6)
+                        .repeatForever()
+                        .delay(Double(index) * 0.2),
+                        value: isAnimating
+                    )
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .glassEffect(
+            .regular.tint(.blue.opacity(0.05)),
+            in: .rect(
+                topLeadingRadius: 6,
+                bottomLeadingRadius: 16,
+                bottomTrailingRadius: 16,
+                topTrailingRadius: 16
+            )
+        )
+        .onAppear {
+            isAnimating = true
+        }
+    }
+}
+
+#Preview {
+    VStack(spacing: 12) {
+        BubbleView(
+            message: ChatMessage(isUser: true, text: "Hello! Can you help me with something?"),
+            isTyping: false
+        )
+
+        BubbleView(
+            message: ChatMessage(isUser: false, text: "Of course! I'd be happy to help you. What would you like to know about?"),
+            isTyping: false
+        )
+
+        BubbleView(
+            message: ChatMessage(isUser: false, text: ""),
+            isTyping: true
+        )
+    }
+    .padding()
+    .background(Color(.systemGroupedBackground))
 }

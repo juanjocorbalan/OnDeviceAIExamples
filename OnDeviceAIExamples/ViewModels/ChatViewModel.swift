@@ -2,7 +2,6 @@ import Foundation
 import FoundationModels
 import Observation
 
-@MainActor
 @Observable
 final class ChatViewModel: BaseViewModel {
     
@@ -24,10 +23,6 @@ final class ChatViewModel: BaseViewModel {
     
     private var trimmedInput: String {
         inputText.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-    
-    var sendButtonIcon: String {
-        isGenerating ? "stop.circle.fill" : "arrow.up.circle.fill"
     }
     
     // MARK: - Public Methods
@@ -57,13 +52,9 @@ final class ChatViewModel: BaseViewModel {
     }
     
     func clearConversation() {
-        cancelGeneration()
+        currentTask?.cancel()
         messages.removeAll()
         foundationModelsService.invalidateChatSession()
-    }
-    
-    func cleanup() {
-        cancelGeneration()
     }
     
     // MARK: - Private Methods

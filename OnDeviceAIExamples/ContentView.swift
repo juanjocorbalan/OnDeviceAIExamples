@@ -2,26 +2,33 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var selectedExample: ExampleType?
-    @State private var availabilityService = AvailabilityService.shared
-    
+    @State private var availabilityService = AvailabilityService()
+
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 16) {
-                    headerSection
-                    
-                    if availabilityService.isChecking {
-                        loadingSection
-                    } else if availabilityService.isAvailable {
-                        exampleButtonsView
-                    } else if let reason = availabilityService.unavailabilityReason {
-                        unavailableSection(reason: reason)
+                GlassEffectContainer(spacing: 20) {
+                    VStack(spacing: 20) {
+                        headerSection
+
+                        if availabilityService.isAvailable {
+                            exampleButtonsView
+                        } else if let reason = availabilityService.unavailabilityReason {
+                            UnavailableView(
+                                reason: reason,
+                                onAction: reason.actionTitle != nil ? {
+                                    availabilityService.performAction()
+                                } : nil
+                            )
+                        }
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
                 }
-                .padding(.top, 8)
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("AI Examples")
+            .navigationBarTitleDisplayMode(.large)
         }
         .sheet(item: $selectedExample) { exampleType in
             if exampleType == .interactiveChat {
@@ -30,76 +37,74 @@ struct ContentView: View {
                 DetailView(exampleType: exampleType)
             }
         }
-        .task {
-            availabilityService.checkAvailability()
-        }
     }
-    
+
     // MARK: - View Components
-    
+
     private var headerSection: some View {
         Text("Explore on-device AI capabilities with Apple's Foundation Models Framework")
             .font(.headline)
             .foregroundStyle(.secondary)
             .multilineTextAlignment(.leading)
-            .padding(16)
-            .frame(maxWidth: .infinity)
-            .cardBackground()
-            .padding(.horizontal, 20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(24)
+            .glassEffect(in: .rect(cornerRadius: 16))
     }
-    
+
     private var exampleButtonsView: some View {
         LazyVGrid(columns: [
-            GridItem(.flexible(), spacing: 16),
-            GridItem(.flexible(), spacing: 16)
+            GridItem(.flexible(), spacing: 20),
+            GridItem(.flexible(), spacing: 20)
         ], spacing: 20) {
             ForEach(ExampleType.allCases, id: \.self) { exampleType in
-                ExampleCard(
-                    title: exampleType.rawValue,
-                    subtitle: exampleType.subtitle,
-                    icon: exampleType.icon
-                ) {
+                Button {
                     selectedExample = exampleType
+                } label: {
+                    VStack(spacing: 16) {
+                        Image(systemName: exampleType.icon)
+                            .font(.system(size: 24, weight: .medium))
+                            .foregroundStyle(exampleType.tintColor ?? .blue)
+
+                        VStack(spacing: 4) {
+                            Text(exampleType.rawValue)
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(.primary)
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2)
+
+                            Text(exampleType.subtitle)
+                                .font(.system(size: 11, weight: .regular))
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                                .lineLimit(3)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 140)
+                    .padding(20)
                 }
+                .glassEffect(in: .rect(cornerRadius: 16))
+                .foregroundStyle(.secondary)
             }
         }
-        .padding(.horizontal, 20)
     }
-    
-    private var loadingSection: some View {
-        VStack(spacing: 20) {
-            ProgressView()
-                .scaleEffect(1.2)
-                .tint(.blue)
-            
-            VStack(spacing: 8) {
-                Text("Checking Availability")
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-                
-                Text("Verifying Foundation Models support...")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
+}
+
+extension ExampleType {
+    var tintColor: Color? {
+        switch self {
+        case .interactiveChat:
+            return .blue
+        case .basicResponse:
+            return .green
+        case .streamingResponse:
+            return .orange
+        case .structuredGeneration:
+            return .purple
+        case .customTool:
+            return .pink
         }
-        .padding(.vertical, 60)
-        .frame(maxWidth: .infinity)
-        .cardBackground()
-        .padding(.horizontal, 20)
     }
-    
-    private func unavailableSection(reason: AvailabilityService.UnavailabilityReason) -> some View {
-        UnavailableView(
-            reason: reason,
-            onRetry: {
-                availabilityService.checkAvailability()
-            },
-            onAction: reason.actionTitle != nil ? {
-                availabilityService.performAction()
-            } : nil
-        )
-    }
-    
 }
 
 #Preview {
