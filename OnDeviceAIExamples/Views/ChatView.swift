@@ -39,24 +39,21 @@ struct ChatView: View {
                         .padding(20)
                 }
             }
+            .background(Color(.systemGroupedBackground))
             .navigationTitle("Interactive Chat")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
+                    Button("Close", systemImage: "xmark") {
                         viewModel.clearConversation()
                         dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
                     }
                     .buttonStyle(.glass)
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
+                    Button("Clear", systemImage: "trash") {
                         viewModel.clearConversation()
-                    } label: {
-                        Image(systemName: "trash")
                     }
                     .disabled(viewModel.messages.isEmpty)
                     .buttonStyle(.glass)
@@ -86,10 +83,9 @@ struct ChatView: View {
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
-        .frame(maxWidth: .infinity)
         .padding(24)
     }
-    
+
     private var inputField: some View {
         HStack(spacing: 12) {
             TextField("Type a message...", text: $viewModel.inputText, axis: .vertical)
@@ -107,11 +103,7 @@ struct ChatView: View {
             Button(action: viewModel.sendOrStopMessage) {
                 Image(systemName: "arrow.up.circle.fill")
                     .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(
-                        viewModel.canSendMessage ?
-                            .blue :
-                            Color.gray.opacity(0.6)
-                    )
+                    .foregroundStyle(viewModel.canSendMessage ? .blue : .gray.opacity(0.6))
             }
             .disabled(!viewModel.canSendMessage && !viewModel.isGenerating)
         }

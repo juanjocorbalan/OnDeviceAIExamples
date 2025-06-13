@@ -5,26 +5,23 @@ struct UnavailableView: View {
     let onAction: (() -> Void)?
 
     var body: some View {
-        GlassEffectContainer(spacing: 0) {
-            VStack(spacing: 32) {
-                iconSection
-                textSection
-                buttonSection
-            }
-            .frame(maxWidth: .infinity)
-            .padding(40)
-            .background(.orange.gradient.opacity(0.3))
-            .clipShape(.rect(cornerRadius: 20))
+        VStack(spacing: 32) {
+            iconSection
+            textSection
+            buttonSection
         }
+        .padding(24)
+        .background(.orange.gradient, in: .rect(cornerRadius: 28))
+        .overlay(.regularMaterial.opacity(0.3), in: .rect(cornerRadius: 28))
     }
 
     private var iconSection: some View {
         Image(systemName: reason.icon)
             .font(.system(size: 40, weight: .medium))
-            .foregroundStyle(.orange)
+            .foregroundStyle(.white)
             .frame(width: 100, height: 100)
-            .glassEffect(in: .circle)
-
+            .background(.white.opacity(0.4), in: .circle)
+            .overlay(Circle().stroke(.white.opacity(0.3), lineWidth: 1))
     }
 
     private var textSection: some View {
@@ -32,23 +29,23 @@ struct UnavailableView: View {
             Text(reason.title)
                 .font(.title2)
                 .fontWeight(.bold)
+                .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
 
             Text(reason.description)
                 .font(.body)
+                .foregroundStyle(.white.opacity(0.8))
                 .multilineTextAlignment(.center)
                 .lineLimit(nil)
         }
     }
 
     private var buttonSection: some View {
-        VStack(spacing: 16) {
+        Group {
             if let actionTitle = reason.actionTitle, let onAction = onAction {
-                Button(actionTitle) {
-                    onAction()
-                }
-                .buttonStyle(.glass)
-                .controlSize(.large)
+                Button(actionTitle) { onAction() }
+                    .buttonStyle(.glass)
+                    .controlSize(.large)
             }
         }
     }

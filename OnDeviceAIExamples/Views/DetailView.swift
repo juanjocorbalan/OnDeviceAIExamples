@@ -9,20 +9,17 @@ struct DetailView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: 16) {
                     headerView
 
                     if availabilityService.isAvailable {
                         if viewModel.isLoading && !viewModel.hasContent {
                             loadingView
                         } else if viewModel.hasContent {
-                            VStack(spacing: 20) {
+                            VStack(spacing: 16) {
                                 requestView
                                 responseView
                             }
-                            .padding(.vertical, 16)
-                            .padding(.horizontal, 20)
-                            .frame(maxWidth: .infinity)
                         } else {
                             emptyStateView
                         }
@@ -42,12 +39,8 @@ struct DetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                    }
-                    .buttonStyle(.glass)
+                    Button("Close", systemImage: "xmark") { dismiss() }
+                        .buttonStyle(.glass)
                 }
             }
             .task {
@@ -64,53 +57,28 @@ struct DetailView: View {
         VStack(spacing: 16) {
             Image(systemName: exampleType.icon)
                 .font(.system(size: 32, weight: .medium))
-                .foregroundStyle(exampleType.tintColor ?? .blue)
+                .foregroundStyle(.white)
                 .frame(width: 80, height: 80)
+                .background(.white.opacity(0.4), in: .circle)
+                .overlay(Circle().stroke(.white.opacity(0.3), lineWidth: 1))
 
             VStack(spacing: 8) {
                 Text(exampleType.rawValue)
                     .font(.title)
                     .fontWeight(.bold)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.white)
 
                 Text(exampleType.subtitle)
                     .font(.body)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.8))
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .padding(.horizontal, 24)
-        .glassEffect(.regular, in: .rect(cornerRadius: 24))
-    }
-
-    private var requestView: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 12) {
-                Image(systemName: "text.bubble")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(.blue)
-                    .frame(width: 32, height: 32)
-
-                Text("Request")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
-
-                Spacer()
-            }
-
-            Text(exampleType.prompt)
-                .font(.body)
-                .foregroundStyle(.primary)
-                .textSelection(.enabled)
-                .padding(20)
-        }
-        .padding(.vertical, 20)
-        .padding(.horizontal, 20)
-        .glassEffect(.regular, in: .rect(cornerRadius: 24))
+        .padding(24)
+        .background((exampleType.tintColor ?? .blue).gradient, in: .rect(cornerRadius: 28))
+        .overlay(.regularMaterial.opacity(0.3), in: .rect(cornerRadius: 28))
     }
 
     private var loadingView: some View {
@@ -130,18 +98,50 @@ struct DetailView: View {
                 .fontWeight(.semibold)
                 .foregroundStyle(.primary)
         }
-        .padding(.vertical, 40)
-        .padding(.horizontal, 24)
-        .glassEffect(.regular, in: .rect(cornerRadius: 24))
+        .padding(24)
+        .background(.regularMaterial, in: .rect(cornerRadius: 24))
+        .overlay(RoundedRectangle(cornerRadius: 24).stroke(.separator.opacity(0.5), lineWidth: 0.5))
+    }
+
+    private var requestView: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                Image(systemName: "text.bubble")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(.blue)
+                    .frame(width: 32, height: 32)
+                    .background(.blue.opacity(0.2), in: .circle)
+                    .overlay(Circle().stroke(.blue.opacity(0.3), lineWidth: 1))
+
+                Text("Request")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+
+                Spacer()
+            }
+
+            Text(exampleType.prompt)
+                .font(.body)
+                .foregroundStyle(.primary)
+                .textSelection(.enabled)
+                .padding(16)
+                .background(.quaternary, in: .rect(cornerRadius: 16))
+        }
+        .padding(16)
+        .background(.regularMaterial, in: .rect(cornerRadius: 24))
+        .overlay(RoundedRectangle(cornerRadius: 24).stroke(.separator.opacity(0.5), lineWidth: 0.5))
     }
 
     private var responseView: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 12) {
                 Image(systemName: viewModel.isError ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(viewModel.isError ? .red : .green)
                     .frame(width: 32, height: 32)
+                    .background((viewModel.isError ? Color.red : Color.green).opacity(0.2), in: .circle)
+                    .overlay(Circle().stroke((viewModel.isError ? Color.red : Color.green).opacity(0.3), lineWidth: 1))
 
                 Text(viewModel.isError ? "Error" : "Response")
                     .font(.headline)
@@ -155,11 +155,12 @@ struct DetailView: View {
                 .font(.body)
                 .foregroundStyle(viewModel.isError ? .red : .primary)
                 .textSelection(.enabled)
-                .padding(20)
+                .padding(16)
+                .background(.quaternary, in: .rect(cornerRadius: 16))
         }
-        .padding(.vertical, 20)
-        .padding(.horizontal, 20)
-        .glassEffect(.regular, in: .rect(cornerRadius: 24))
+        .padding(16)
+        .background(.regularMaterial, in: .rect(cornerRadius: 24))
+        .overlay(RoundedRectangle(cornerRadius: 24).stroke(.separator.opacity(0.5), lineWidth: 0.5))
     }
 
     private var emptyStateView: some View {
@@ -168,6 +169,8 @@ struct DetailView: View {
                 .font(.system(size: 40, weight: .medium))
                 .foregroundStyle(exampleType.tintColor ?? .blue)
                 .frame(width: 100, height: 100)
+                .background((exampleType.tintColor ?? .blue).opacity(0.2), in: .circle)
+                .overlay(Circle().stroke((exampleType.tintColor ?? .blue).opacity(0.3), lineWidth: 1))
 
             VStack(spacing: 8) {
                 Text("Ready to generate")
@@ -181,22 +184,16 @@ struct DetailView: View {
                     .multilineTextAlignment(.center)
             }
 
-            Button {
-                Task {
-                    await executeExample()
-                }
-            } label: {
-                Label("Generate", systemImage: "sparkles")
-                    .labelStyle(.titleAndIcon)
+            Button("Generate", systemImage: "sparkles") {
+                Task { await executeExample() }
             }
             .buttonStyle(.glass)
             .controlSize(.large)
             .tint(.blue)
         }
-        .padding(.vertical, 40)
-        .padding(.horizontal, 24)
-        .frame(maxWidth: .infinity)
-        .glassEffect(.regular, in: .rect(cornerRadius: 24))
+        .padding(24)
+        .background(.regularMaterial, in: .rect(cornerRadius: 24))
+        .overlay(RoundedRectangle(cornerRadius: 24).stroke(.separator.opacity(0.5), lineWidth: 0.5))
     }
 
     // MARK: - Actions
