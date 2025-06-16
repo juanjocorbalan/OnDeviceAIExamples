@@ -31,6 +31,8 @@ struct ContentView: View {
         .sheet(item: $selectedExample) { exampleType in
             if exampleType == .interactiveChat {
                 ChatView()
+            } else if exampleType == .structuredGeneration {
+                ColorPaletteView()
             } else {
                 DetailView(exampleType: exampleType)
             }

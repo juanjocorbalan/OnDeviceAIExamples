@@ -48,7 +48,6 @@ struct ChatView: View {
                         viewModel.clearConversation()
                         dismiss()
                     }
-                    .buttonStyle(.glass)
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -56,7 +55,6 @@ struct ChatView: View {
                         viewModel.clearConversation()
                     }
                     .disabled(viewModel.messages.isEmpty)
-                    .buttonStyle(.glass)
                 }
             }
             .alert("Error", isPresented: $viewModel.showErrorAlert) {

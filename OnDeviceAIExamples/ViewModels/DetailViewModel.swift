@@ -1,6 +1,7 @@
 import Foundation
 import FoundationModels
 import Observation
+import OSLog
 
 @Observable
 final class DetailViewModel: BaseViewModel {
@@ -8,6 +9,7 @@ final class DetailViewModel: BaseViewModel {
     // MARK: - Properties
 
     var response: String = ""
+    let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "OnDeviceAIExamples", category: "DetailViewModel")
 
     // MARK: - Computed Properties
 
@@ -26,33 +28,27 @@ final class DetailViewModel: BaseViewModel {
     // MARK: - Operations
 
     func execute(example: ExampleType) async {
+        logger.info("Executing example: \(example.rawValue)")
         switch example {
         case .basicResponse:
             await executeBasicResponse(example: example)
         case .streamingResponse:
             await executeStreamingResponse(example: example)
         case .structuredGeneration:
-            await executeStructuredGeneration(example: example)
+            // This case should not be reached since ColorPaletteView is handled separately
+            return
         case .customTool:
             await executeCustomTool(example: example)
         case .interactiveChat:
-            return // Interactive chat is handled by ChatViewModel
+            return  // Interactive chat is handled by ChatViewModel
         }
     }
 
     private func executeBasicResponse(example: ExampleType) async {
         await executeStandardOperation {
-            try await self.foundationModelsService.generateResponse(prompt: example.prompt)
-        }
-    }
-
-    private func executeStructuredGeneration(example: ExampleType) async {
-        await executeStandardOperation {
-            let workout = try await self.foundationModelsService.generateStructuredData(
-                prompt: example.prompt,
-                type: FitnessWorkout.self
+            try await self.foundationModelsService.generateResponse(
+                prompt: example.prompt
             )
-            return self.formatWorkout(workout)
         }
     }
 
@@ -62,7 +58,9 @@ final class DetailViewModel: BaseViewModel {
         resetError()
 
         do {
-            let stream = foundationModelsService.streamResponse(prompt: example.prompt)
+            let stream = foundationModelsService.streamResponse(
+                prompt: example.prompt
+            )
 
             for try await partialResponse in stream {
                 response = partialResponse
@@ -76,28 +74,17 @@ final class DetailViewModel: BaseViewModel {
 
     private func executeCustomTool(example: ExampleType) async {
         await executeStandardOperation {
-            try await self.foundationModelsService.executeWithTools(prompt: example.prompt)
+            try await self.foundationModelsService.executeWithTools(
+                prompt: example.prompt
+            )
         }
     }
 
     // MARK: - Helper Methods
 
-    private func formatWorkout(_ workout: FitnessWorkout) -> String {
-        return """
-        🏋️ FITNESS WORKOUT:
-        Name: \(workout.name)
-        Difficulty: \(workout.difficulty)
-        Duration: \(workout.duration) minutes
-        Calories Burned: \(workout.caloriesBurned)
-        
-        Exercises:
-        \(workout.exercises.map { "• \($0)" }.joined(separator: "\n"))
-        
-        Equipment: \(workout.equipment.joined(separator: ", "))
-        """
-    }
-
-    private func executeStandardOperation(_ operation: @escaping () async throws -> String) async {
+    private func executeStandardOperation(
+        _ operation: @escaping () async throws -> String
+    ) async {
         isLoading = true
         response = ""
         resetError()

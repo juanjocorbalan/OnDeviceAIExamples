@@ -40,7 +40,6 @@ struct DetailView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Close", systemImage: "xmark") { dismiss() }
-                        .buttonStyle(.glass)
                 }
             }
             .task {
