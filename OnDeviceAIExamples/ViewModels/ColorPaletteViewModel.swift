@@ -2,7 +2,6 @@ import Foundation
 import FoundationModels
 import Observation
 import SwiftUI
-import OSLog
 
 @Observable
 final class ColorPaletteViewModel: BaseViewModel {
@@ -14,13 +13,9 @@ final class ColorPaletteViewModel: BaseViewModel {
     var generatedPalette: ColorPalette? = nil
     var isGenerating = false
     
-    let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "OnDeviceAIExamples", category: "ColorPaletteViewModel")
-    
     // MARK: - Methods
     
     func generatePalette() async {
-        logger.info("Starting palette generation for color: \(self.selectedColor.hexString), harmony: \(self.selectedHarmonyType.displayName)")
-        
         isGenerating = true
         resetError()
         generatedPalette = nil
@@ -40,9 +35,7 @@ final class ColorPaletteViewModel: BaseViewModel {
                 type: ColorPalette.self,
                 instructions: "You are a graphic designer with expert knowledge in color theory, visual identity, and user interface design."
             )
-            logger.info("Successfully generated palette")
         } catch {
-            logger.error("Failed to generate palette: \(error.localizedDescription)")
             handleError(error)
         }
         

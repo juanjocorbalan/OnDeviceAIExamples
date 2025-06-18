@@ -1,7 +1,6 @@
 import Foundation
 import FoundationModels
 import Observation
-import OSLog
 
 @Observable
 final class DetailViewModel: BaseViewModel {
@@ -9,7 +8,6 @@ final class DetailViewModel: BaseViewModel {
     // MARK: - Properties
 
     var response: String = ""
-    let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "OnDeviceAIExamples", category: "DetailViewModel")
 
     // MARK: - Computed Properties
 
@@ -21,80 +19,54 @@ final class DetailViewModel: BaseViewModel {
         errorMessage.isEmpty ? response : errorMessage
     }
 
-    var isError: Bool {
-        !errorMessage.isEmpty
-    }
 
     // MARK: - Operations
 
     func execute(example: ExampleType) async {
-        logger.info("Executing example: \(example.rawValue)")
         switch example {
         case .basicResponse:
-            await executeBasicResponse(example: example)
+            await executeStandardOperation {
+                try await self.foundationModelsService.generateResponse(prompt: example.prompt)
+            }
         case .streamingResponse:
-            await executeStreamingResponse(example: example)
-        case .structuredGeneration:
-            // This case should not be reached since ColorPaletteView is handled separately
-            return
+            await executeStreamingResponse(for: example)
         case .customTool:
-            await executeCustomTool(example: example)
-        case .interactiveChat:
-            return  // Interactive chat is handled by ChatViewModel
+            await executeStandardOperation {
+                try await self.foundationModelsService.executeWithTools(prompt: example.prompt)
+            }
+        case .structuredGeneration, .interactiveChat:
+            return
         }
     }
 
-    private func executeBasicResponse(example: ExampleType) async {
-        await executeStandardOperation {
-            try await self.foundationModelsService.generateResponse(
-                prompt: example.prompt
-            )
-        }
-    }
-
-    private func executeStreamingResponse(example: ExampleType) async {
-        isLoading = true
-        response = ""
-        resetError()
+    private func executeStreamingResponse(for example: ExampleType) async {
+        prepareForExecution()
 
         do {
-            let stream = foundationModelsService.streamResponse(
-                prompt: example.prompt
-            )
-
+            let stream = foundationModelsService.streamResponse(prompt: example.prompt)
             for try await partialResponse in stream {
                 response = partialResponse
             }
-
             isLoading = false
         } catch {
             handleError(error)
         }
     }
 
-    private func executeCustomTool(example: ExampleType) async {
-        await executeStandardOperation {
-            try await self.foundationModelsService.executeWithTools(
-                prompt: example.prompt
-            )
-        }
-    }
-
-    // MARK: - Helper Methods
-
-    private func executeStandardOperation(
-        _ operation: @escaping () async throws -> String
-    ) async {
-        isLoading = true
-        response = ""
-        resetError()
+    private func executeStandardOperation(_ operation: @escaping () async throws -> String) async {
+        prepareForExecution()
 
         do {
             response = try await operation()
+            isLoading = false
         } catch {
             handleError(error)
         }
+    }
 
-        isLoading = false
+    private func prepareForExecution() {
+        isLoading = true
+        response = ""
+        resetError()
     }
 }

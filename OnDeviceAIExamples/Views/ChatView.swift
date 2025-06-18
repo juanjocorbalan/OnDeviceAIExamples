@@ -39,7 +39,6 @@ struct ChatView: View {
                         .padding(20)
                 }
             }
-            .background(Color(.systemGroupedBackground))
             .navigationTitle("Interactive Chat")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
